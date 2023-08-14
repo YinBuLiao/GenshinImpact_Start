@@ -1,0 +1,5 @@
+opencv-python
+pyautogui
+numpy
+subprocess
+win32api
