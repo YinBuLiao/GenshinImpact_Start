@@ -10,15 +10,6 @@ import win32con
 import win32gui
 from PIL import ImageGrab
 
-
-def find_genshin_window():
-    while True:
-        windows = pyautogui.getWindowsWithTitle("原神")
-        if windows:
-            return windows[1]
-        pyautogui.sleep(1)
-
-
 while True:
     # 检查原神是否已经启动
     if os.system('tasklist /FI "IMAGENAME eq YuanShen.exe" 2>NUL | find /I /N "YuanShen.exe">NUL') == 0:
@@ -29,13 +20,13 @@ while True:
     screen_width, screen_height = pyautogui.size()
 
     # 截图
-    print("正在检测屏幕...")
     screenshot = cv2.cvtColor(np.array(ImageGrab.grab(bbox=(0, 0, screen_width, screen_height))), cv2.COLOR_BGR2RGB)
 
     # 计算屏幕白色像素比例
-    white_pixels = np.count_nonzero(screenshot == [255, 255, 255])
+    white_pixels = np.count_nonzero(screenshot >= [250, 250, 250])
     total_pixels = screenshot.shape[0] * screenshot.shape[1]
     white_percentage = white_pixels / total_pixels * 100
+    print(f"屏幕含原量{white_percentage}%")
 
     # 判断是否满足启动条件
     if white_percentage >= 90:
@@ -63,9 +54,10 @@ while True:
             cv2.imshow('Transition', screenshot)
             hwnd = win32gui.FindWindow(None, "Transition")
             CVRECT = cv2.getWindowImageRect("Transition")
-            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, CVRECT[2], CVRECT[3], win32con.SWP_SHOWWINDOW)
+            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, screen_width, screen_height,
+                                  win32con.SWP_SHOWWINDOW)
 
-            # 将游戏启动
+            # 原神，启动！
             subprocess.Popen(game_exe)
 
             # 进行过渡并在过渡窗口上显示
@@ -76,16 +68,29 @@ while True:
                 cv2.waitKey(10)
 
             # 枚举窗口,找到名称包含"原神"的窗口
-            window = find_genshin_window()
-            time.sleep(1)
+            while True:
+                windows = pyautogui.getWindowsWithTitle("原神")
+                if windows:
+                    # 将过渡窗口置于非最高层
+                    win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, screen_width, screen_height,
+                                          win32con.SWP_SHOWWINDOW)
+                    # 将原神置于最高层
+                    hwnd = win32gui.FindWindow(None, "原神")
+                    win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, screen_width, screen_height,
+                                          win32con.SWP_SHOWWINDOW)
 
-            # 将原神置顶
-            pyautogui.moveTo(window.left, window.top)
-            print("原神 启动!")
+                    # 将原神置顶
+                    genshin_window = windows[0]
+                    pyautogui.moveTo(genshin_window.left, genshin_window.top)
+                    pyautogui.click(genshin_window.left, genshin_window.top)
+                    print("原神 启动!")
 
-            # 过渡完毕，删除过渡窗口
-            cv2.destroyAllWindows()
+                    # 过渡完毕，偷偷删除过渡窗口
+                    time.sleep(5)
+                    cv2.destroyAllWindows()
+                    break
 
+                time.sleep(1)
             break
 
         except:
