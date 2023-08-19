@@ -1,11 +1,23 @@
-import cv2
-import pyautogui
 import os
-import time
 import subprocess
-import win32com.client
+import time
+
+import cv2
 import numpy as np
+import pyautogui
+import win32com.client
+import win32con
+import win32gui
 from PIL import ImageGrab
+
+
+def find_genshin_window():
+    while True:
+        windows = pyautogui.getWindowsWithTitle("原神")
+        if windows:
+            return windows[1]
+        pyautogui.sleep(1)
+
 
 while True:
     # 检查原神是否已经启动
@@ -39,18 +51,22 @@ while True:
             # 拼接游戏exe路径
             game_exe = os.path.join(install_dir, 'Genshin Impact Game', 'YuanShen.exe')
 
-            # 将游戏启动
-            subprocess.Popen(game_exe)
-
             # 创建过渡图片
-            transition_steps = 20
+            transition_steps = 35
             white_image = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
 
-            # 创建过渡窗口
+            # 创建过渡窗口并置顶
             cv2.namedWindow('Transition', cv2.WND_PROP_FULLSCREEN)
             cv2.setWindowProperty('Transition', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
             transition_window = pyautogui.getWindowsWithTitle("Transition")[0]
             pyautogui.moveTo(transition_window.left, transition_window.top)
+            cv2.imshow('Transition', screenshot)
+            hwnd = win32gui.FindWindow(None, "Transition")
+            CVRECT = cv2.getWindowImageRect("Transition")
+            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, CVRECT[2], CVRECT[3], win32con.SWP_SHOWWINDOW)
+
+            # 将游戏启动
+            subprocess.Popen(game_exe)
 
             # 进行过渡并在过渡窗口上显示
             for step in range(transition_steps):
@@ -59,17 +75,17 @@ while True:
                 cv2.imshow('Transition', blended_image)
                 cv2.waitKey(10)
 
-            time.sleep(3)
-
             # 枚举窗口,找到名称包含"原神"的窗口
-            window = pyautogui.getWindowsWithTitle("原神")[0]
-
-            # 过渡完毕，删除过渡窗口
-            cv2.destroyAllWindows()
+            window = find_genshin_window()
+            time.sleep(1)
 
             # 将原神置顶
             pyautogui.moveTo(window.left, window.top)
             print("原神 启动!")
+
+            # 过渡完毕，删除过渡窗口
+            cv2.destroyAllWindows()
+
             break
 
         except:
