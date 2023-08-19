@@ -1,2 +1,5 @@
 .idea
 venv
+*.spec
+build
+dist

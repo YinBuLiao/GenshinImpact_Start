@@ -39,26 +39,35 @@ while True:
             # 拼接游戏exe路径
             game_exe = os.path.join(install_dir, 'Genshin Impact Game', 'YuanShen.exe')
 
-            # 将游戏置顶启动
+            # 将游戏启动
             subprocess.Popen(game_exe)
-            # 枚举窗口,找到名称包含"原神"的窗口
-            time.sleep(5)
-            window = pyautogui.getWindowsWithTitle("原神")[0]
 
-            # 添加过渡效果
-            transition_steps = 100
+            # 创建过渡图片
+            transition_steps = 20
             white_image = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
-            screenshot = np.array(ImageGrab.grab(bbox=(0, 0, screen_width, screen_height)))
-            # 进行过渡
+
+            # 创建过渡窗口
+            cv2.namedWindow('Transition', cv2.WND_PROP_FULLSCREEN)
+            cv2.setWindowProperty('Transition', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+            transition_window = pyautogui.getWindowsWithTitle("Transition")[0]
+            pyautogui.moveTo(transition_window.left, transition_window.top)
+
+            # 进行过渡并在过渡窗口上显示
             for step in range(transition_steps):
                 alpha = (step + 1) / transition_steps
                 blended_image = cv2.addWeighted(screenshot, 1 - alpha, white_image, alpha, 0)
                 cv2.imshow('Transition', blended_image)
                 cv2.waitKey(10)
 
+            time.sleep(3)
+
+            # 枚举窗口,找到名称包含"原神"的窗口
+            window = pyautogui.getWindowsWithTitle("原神")[0]
+
+            # 过渡完毕，删除过渡窗口
             cv2.destroyAllWindows()
 
-            # 将目标窗口置顶  
+            # 将原神置顶
             pyautogui.moveTo(window.left, window.top)
             print("原神 启动!")
             break
