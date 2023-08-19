@@ -42,7 +42,7 @@ while True:
             # 拼接游戏exe路径
             game_exe = os.path.join(install_dir, 'Genshin Impact Game', 'YuanShen.exe')
 
-            # 创建过渡图片
+            # 创建过渡用的白色图片
             transition_steps = 35
             white_image = np.full((screen_height, screen_width, 3), 255, dtype=np.uint8)
 
