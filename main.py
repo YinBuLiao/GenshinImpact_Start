@@ -74,12 +74,11 @@ while True:
                     # 将过渡窗口置于非最高层
                     win32gui.SetWindowPos(hwnd, win32con.HWND_NOTOPMOST, 0, 0, screen_width, screen_height,
                                           win32con.SWP_SHOWWINDOW)
+
                     # 将原神置于最高层
                     hwnd = win32gui.FindWindow(None, "原神")
                     win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, screen_width, screen_height,
                                           win32con.SWP_SHOWWINDOW)
-
-                    # 将原神置顶
                     genshin_window = windows[0]
                     pyautogui.moveTo(genshin_window.left, genshin_window.top)
                     pyautogui.click(genshin_window.left, genshin_window.top)
